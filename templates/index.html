@@ -3,59 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hexagon Tile Game</title>
+    <title>Gotchya!</title>
     <style>
-        body {
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 50px);
+            gap: 5px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 1px solid black;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
         }
-        #board {
-            display: grid;
-            grid-template-columns: repeat(10, 60px);
-            grid-template-rows: repeat(10, 52px);
-            gap: 2px;
-        }
-        .hex {
-            width: 60px;
-            height: 52px;
-            background-color: lightgray;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            transition: background-color 0.2s;
-        }
+        .pink { background-color: pink; }
+        .blue { background-color: blue; }
     </style>
 </head>
 <body>
+    <h1>Connect Four</h1>
 
-<div id="board">
-    <!-- Hexagonal tiles will be added here on clicks -->
-</div>
+    <div>
+        <label>Player 1 Name:</label>
+        <input type="text" id="player1" />
+        <label>Player 2 Name:</label>
+        <input type="text" id="player2" />
+        <button onclick="setNames()">Set Names</button>
+    </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        // Create an empty board of hex tiles
-        for (let i = 0; i < 100; i++) {
-            const hexTile = $('<div class="hex"></div>');
-            hexTile.data("clicked", false);  // Track if a tile has been clicked
-            $('#board').append(hexTile);
+    <h2 id="turn">Current Turn: Player 1</h2>
+    <div class="grid" id="grid">
+        <!-- Grid cells will be dynamically created here -->
+    </div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const turnIndicator = document.getElementById('turn');
+
+        let currentPlayer = 'Player 1';
+
+        // Create the grid dynamically
+        function initializeGrid() {
+            grid.innerHTML = '';
+            for (let r = 0; r < 6; r++) {
+                for (let c = 0; c < 7; c++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.onclick = () => placeTile(c);
+                    grid.appendChild(cell);
+                }
+            }
         }
 
-        // Add color to hex tiles on click
-        $('#board').on('click', '.hex', function() {
-            if (!$(this).data("clicked")) {  // Only allow one click per tile
-                $.getJSON('/add_tile', function(data) {
-                    $(this).css('background-color', data.color);
-                    $(this).data("clicked", true);  // Mark as clicked
-                }.bind(this));
-            }
-        });
-    });
-</script>
+        // Set player names
+        async function setNames() {
+            const player1 = document.getElementById('player1').value;
+            const player2 = document.getElementById('player2').value;
 
+            const response = await fetch('/set_names', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ player1, player2 })
+            });
+
+            if (response.ok) {
+                alert('Names set successfully!');
+            }
+        }
+
+        // Place a tile
+        async function placeTile(column) {
+            const response = await fetch('/play', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ column })
+            });
+
+            const data = await response.json();
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            if (data.winner) {
+                alert(`${data.winner} wins!`);
+                initializeGrid();
+            } else {
+                updateGrid(data.grid);
+                currentPlayer = currentPlayer === 'Player 1' ? 'Player 2' : 'Player 1';
+                turnIndicator.textContent = `Current Turn: ${currentPlayer}`;
+            }
+        }
+
+        // Update the grid display
+        function updateGrid(serverGrid) {
+            for (let r = 0; r < 6; r++) {
+                for (let c = 0; c < 7; c++) {
+                    const cell = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+                    cell.className = 'cell';
+                    if (serverGrid[r][c]) {
+                        cell.classList.add(serverGrid[r][c]);
+                    }
+                }
+            }
+        }
+
+        // Initialize the grid on page load
+        initializeGrid();
+    </script>
 </body>
 </html>
+

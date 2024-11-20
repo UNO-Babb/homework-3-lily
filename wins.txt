@@ -1,0 +1,2 @@
+Player 1: 6
+Player 2: 0
