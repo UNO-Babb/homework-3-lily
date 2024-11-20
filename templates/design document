@@ -1,0 +1,25 @@
+design document- https://docs.google.com/document/d/1-FDf2dgiePeZCfP4R8nU4cRLQFzBnXLLCfv80NkiGOI/edit?usp=sharing
+Board Game- Design Document 
+CIST 1600 - Homework 3
+Lily Price
+
+
+Game name: Gotchya
+- What are the rules to the game?
+This game is inspired by Connect 4, yet it has its own twists. The game consists of a 6 X 7 grid. Each player has their own coins to place into the grid. The first player to get 4 in a row vertical, horizontal, or diagonal wins.
+
+
+- How is it played, is there a dice roll or some other action?
+Players place their coin on the grid. 
+
+
+- How are the player pieces visually identified?
+Player 1 has pink coins and Player 2, the computer, has blue coins.
+
+
+- What other elements are in the game?
+If one player surrounds the other player’s coin on two sides, they automatically steal that coin and it turns into the surrounding player’s color. 
+
+
+- What input from the user would you need to make the game go?
+Player can type in their name at the start of the game and once they enter their name they can begin the name and place their first coin. 
